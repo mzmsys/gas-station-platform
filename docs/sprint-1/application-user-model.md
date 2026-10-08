@@ -195,9 +195,9 @@ Only `ADMINISTRATOR` is required to complete this epic. `MANAGER` and `ATTENDANT
 | Multiple organizations | Out of MVP scope (D8). Would add an organization link to users and stations and scope email uniqueness per organization. |
 | Changing auth provider or adding SSO | Only `auth_user_id` is affected (D1, D2). |
 
-## 9. Target schema (for review, not yet applied)
+## 9. Target schema
 
-This is the target definition. Whether it is reached by altering the existing table or recreating it is decided in the persistence story (Q3).
+Implemented in [`supabase/migrations/20261007200000_application_users.sql`](../../supabase/migrations/20261007200000_application_users.sql), which alters the existing table (Q3). Tests: [`supabase/tests/users.test.sql`](../../supabase/tests/users.test.sql).
 
 ```sql
 create extension if not exists citext;
@@ -239,7 +239,7 @@ Notes on the constraints:
 
 ### 9.1 Rules enforced by database triggers
 
-These rules cannot be expressed as column constraints, so they are enforced by triggers on `public.users` (D9). The SQL is written in the persistence story; this is the specification it must meet.
+These rules cannot be expressed as column constraints, so they are enforced by triggers on `public.users` (D9). The SQL is in the migration above; this is the specification it meets.
 
 **Who is acting.** The acting user is the application user whose `auth_user_id` equals the session's `auth.uid()`. When there is no session (migrations, the first-administrator seed, Supabase dashboard SQL), the change is made by the **system**.
 
@@ -286,7 +286,7 @@ Sign-ups that were not invited never match an `INVITED` user, so they never gain
 | Q2 | What is the v1 role catalogue beyond Administrator? | **Open:** `MANAGER`, `ATTENDANT` kept as placeholders for the MVP. |
 | Q3 | Does the existing `users` table contain data that must be kept? | **Resolved:** no. The one row is test data and is deleted by the migration (section 5). |
 | Q4 | May the application user email differ from the login email? | **Resolved:** no. Synced by the database (D10, 9.2). |
-| Q5 | How is the first administrator created? | **Resolved:** inserted by the migration as `ADMINISTRATOR` / `INVITED`, invited from the Supabase dashboard, and activated by the database on acceptance (section 5, 9.3). **Still needed before the migration:** that person's name and email. |
+| Q5 | How is the first administrator created? | **Resolved:** inserted by the migration as `ADMINISTRATOR` / `INVITED`, invited from the Supabase dashboard, and activated by the database on acceptance (section 5, 9.3). Seeded as Francis Kato (fkato1@umbc.edu). |
 | Q6 | One organization or many? | **Resolved:** one organization, two stations, for the MVP (D8). |
 | Q7 | Where are business rules enforced? | **Resolved:** in the database (D9, section 4.1). |
 | Q8 | How are users onboarded? | **Resolved for MVP:** Supabase invitation email (section 6). Supabase's built-in email sender is rate-limited; a custom SMTP sender should be configured before demonstrating invitations to the owners. |
